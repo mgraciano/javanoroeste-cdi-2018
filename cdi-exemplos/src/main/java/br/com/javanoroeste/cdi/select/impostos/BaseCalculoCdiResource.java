@@ -51,15 +51,21 @@ public class BaseCalculoCdiResource {
         // Desta forma, podemos selecionar dinamicamente o comportamente da aplicação baseado em quaisquer
         // dados disponpiveis!!! Desde enums a quaisquer tipos de literais como strings, números, etc.
         final Instance<BaseCalculoService> fabrica = calculos.select(new BaseCalculoPraQualifier(uf));
+        // Verificação se instância é satisfeita conforme parâmetros
         if (fabrica.isUnsatisfied()) {
             throw new UnsupportedOperationException("Operação ainda não implementada para " + uf.getNome());
         } else if (fabrica.isAmbiguous()) {
+            // Resolução de possíveis ambiguidades, geralmente erros de configuração
             throw new IllegalStateException("Mais de uma implementação foi encontrada para " + uf.getNome());
         }
 
+        // Resolução e uso da instância
         final BaseCalculoService instancia = fabrica.get();
         final BaseCalculo resultado = instancia.calcula();
 
+        // Destruição de instância, muito importante nestes cenários
+        // Detalhes em http://weld.cdi-spec.org/documentation/#6 e
+        // http://weld.cdi-spec.org/news/2016/05/18/enhanced-instance/
         calculos.destroy(instancia);
 
         return resultado;
