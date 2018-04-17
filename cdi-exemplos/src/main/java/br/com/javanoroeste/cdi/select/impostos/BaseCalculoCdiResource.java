@@ -50,13 +50,18 @@ public class BaseCalculoCdiResource {
     public BaseCalculo get(@QueryParam("uf") Uf uf) {
         // Desta forma, podemos selecionar dinamicamente o comportamente da aplicação baseado em quaisquer
         // dados disponpiveis!!! Desde enums a quaisquer tipos de literais como strings, números, etc.
-        final Instance<BaseCalculoService> instancia = calculos.select(new BaseCalculoPraQualifier(uf));
-        if (instancia.isUnsatisfied()) {
+        final Instance<BaseCalculoService> fabrica = calculos.select(new BaseCalculoPraQualifier(uf));
+        if (fabrica.isUnsatisfied()) {
             throw new UnsupportedOperationException("Operação ainda não implementada para " + uf.getNome());
-        } else if (instancia.isAmbiguous()) {
+        } else if (fabrica.isAmbiguous()) {
             throw new IllegalStateException("Mais de uma implementação foi encontrada para " + uf.getNome());
         }
 
-        return instancia.get().calcula();
+        final BaseCalculoService instancia = fabrica.get();
+        final BaseCalculo resultado = instancia.calcula();
+
+        calculos.destroy(instancia);
+
+        return resultado;
     }
 }
