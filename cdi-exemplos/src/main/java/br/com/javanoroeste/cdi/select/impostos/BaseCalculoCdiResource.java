@@ -32,7 +32,6 @@ package br.com.javanoroeste.cdi.select.impostos;
 
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
-import javax.enterprise.util.AnnotationLiteral;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -52,8 +51,10 @@ public class BaseCalculoCdiResource {
         // Desta forma, podemos selecionar dinamicamente o comportamente da aplicação baseado em quaisquer
         // dados disponpiveis!!! Desde enums a quaisquer tipos de literais como strings, números, etc.
         final Instance<BaseCalculoService> instancia = calculos.select(new BaseCalculoPraQualifier(uf));
-        if (instancia.isUnsatisfied() || instancia.isAmbiguous()) {
+        if (instancia.isUnsatisfied()) {
             throw new UnsupportedOperationException("Operação ainda não implementada para " + uf.getNome());
+        } else if (instancia.isAmbiguous()) {
+            throw new IllegalStateException("Mais de uma implementação foi encontrada para " + uf.getNome());
         }
 
         return instancia.get().calcula();
